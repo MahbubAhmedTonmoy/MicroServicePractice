@@ -30,25 +30,28 @@ namespace MS2
         {
             services.AddMassTransit(x =>
             {
-                x.AddConsumer<OrderConsumer>();
-                x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
+                services.AddMassTransit(x =>
                 {
-                    cfg.UseHealthCheck(provider);
-                    cfg.Host("rabbitmq://localhost");
-
-                    cfg.ReceiveEndpoint("order_queue", ep =>
-                     {
-                         ep.PrefetchCount = 16;
-                         ep.UseMessageRetry(r => r.Interval(2, 100));
-                         ep.ConfigureConsumer<OrderConsumer>(provider);
- 
-                       });
-                }));
-            });
-
-            services.AddMassTransitHostedService();
-            services.AddControllers();
-        }
+                    x.AddConsumer<OrderConsumer>();
+                    x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
+                    {
+                        cfg.UseHealthCheck(provider);
+                        cfg.Host(new Uri("rabbitmq://localhost"), h =>
+                        {
+                            h.Username("guest");
+                            h.Password("guest");
+                        });
+                        cfg.ReceiveEndpoint("ticketQueue", ep =>
+                        {
+                            ep.PrefetchCount = 16;
+                            ep.UseMessageRetry(r => r.Interval(2, 100));
+                            ep.ConfigureConsumer<TicketConsumer>(provider);
+                        });
+                    }));
+                });
+                services.AddMassTransitHostedService();
+                services.AddControllers();
+            }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

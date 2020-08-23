@@ -10,25 +10,27 @@ using MS1.Model;
 namespace MS1.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class OrderController : ControllerBase
     {
-        private readonly IBusControl _bus;
-        private readonly ILogger<OrderController> _logger;
-
-        public OrderController(ILogger<OrderController> logger, IBusControl bus)
+        private readonly IBus _bus;
+        public OrderController(IBus bus)
         {
-            _logger = logger;
             _bus = bus;
         }
-
         [HttpPost]
         public async Task<IActionResult> CreateOrder(Order order)
         {
-            Uri uri = new Uri("rabbitmq://localhost/order_queue");
-            var endpoint = await _bus.GetSendEndpoint(uri);
-            await endpoint.Send(order);
-            return Ok("Success");
+            if (order != null)
+            {
+                Uri uri = new Uri("rabbitmq://localhost/testQueue");
+                var endPoint = await _bus.GetSendEndpoint(uri);
+                await endPoint.Send(order);
+                return Ok();
+            }
+            return BadRequest();
         }
+
+        
     }
 }

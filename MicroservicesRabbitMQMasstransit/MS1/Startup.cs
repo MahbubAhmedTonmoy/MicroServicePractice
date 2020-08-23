@@ -29,15 +29,17 @@ namespace MS1
         {
             services.AddMassTransit(x =>
             {
-                x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
+                x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(config =>
                 {
-                    cfg.UseHealthCheck(provider);
-                    cfg.Host("rabbitmq://localhost");
+                    config.UseHealthCheck(provider);
+                    config.Host(new Uri("rabbitmq://localhost"), h =>
+                    {
+                        h.Username("guest");
+                        h.Password("guest");
+                    });
                 }));
             });
-
             services.AddMassTransitHostedService();
-
             services.AddControllers();
         }
 
