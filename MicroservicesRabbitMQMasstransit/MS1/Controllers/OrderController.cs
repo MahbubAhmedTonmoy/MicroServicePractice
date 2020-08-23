@@ -23,7 +23,7 @@ namespace MS1.Controllers
         {
             if (order != null)
             {
-                Uri uri = new Uri("rabbitmq://localhost/testQueue");
+                Uri uri = new Uri("rabbitmq://localhost/OrderQueue");
                 var endPoint = await _bus.GetSendEndpoint(uri);
                 await endPoint.Send(order);
                 return Ok();
